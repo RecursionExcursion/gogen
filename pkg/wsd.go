@@ -10,6 +10,12 @@ import (
 	"github.com/RecursionExcursion/wsd-core/internal"
 )
 
+var SupportedArchitecture = map[string]internal.CompliationPair{
+	internal.Win64:   {Os: "windows", Arch: "amd64"},
+	internal.Linux64: {Os: "linux", Arch: "arm64"},
+	internal.Mac64:   {Os: "darwin", Arch: "arm64"},
+}
+
 type CreateExeParams struct {
 	Name     string
 	Arch     string
@@ -73,7 +79,7 @@ func execCmdOnTempProject(tempDir string, params CreateExeParams) (string, strin
 		return "", "", err
 	}
 
-	arc := internal.SupportedArchitecture[params.Arch]
+	arc := SupportedArchitecture[params.Arch]
 
 	exeName := ""
 	if params.Name != "" {
