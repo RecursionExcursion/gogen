@@ -58,11 +58,12 @@ defer cleanup() // Important!
 
 To build binaries for other platforms, Go must have the standard library installed for each target. Run:
 
+```bash
 CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go install std
 CGO_ENABLED=0 GOOS=darwin  GOARCH=amd64 go install std
 CGO_ENABLED=0 GOOS=linux   GOARCH=amd64 go install std
-
-   Without this, cross-compilation may fail with "missing std" errors.
+```
+Without this, cross-compilation may fail with "missing std" errors.
 
 ## Installation
 
