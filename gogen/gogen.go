@@ -1,16 +1,17 @@
-package pkg
+package gogen
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 
-	"github.com/RecursionExcursion/wsd-core/internal"
+	"github.com/RecursionExcursion/gogen/internal"
 )
 
-var SupportedArchitecture = map[string]internal.CompliationPair{
+var SupportedArchitecture = map[string]internal.CompilationPair{
 	internal.Win64:   {Os: "windows", Arch: "amd64"},
 	internal.Linux64: {Os: "linux", Arch: "arm64"},
 	internal.Mac64:   {Os: "darwin", Arch: "arm64"},
@@ -20,41 +21,43 @@ type CreateExeParams struct {
 	Name     string
 	Arch     string
 	Commands []string
+	Logger   *log.Logger
 }
 
-// TODO update logs to use lib.Log()
-func CreateGoExe(params CreateExeParams) (string, string, error) {
+/* returns binaryPath, exeName, cleanup fn (should be defered till after bin is served), and error */
+func GenerateGoExe(params CreateExeParams) (binPath string, exeName string, cleanup func(), err error) {
+	//creates throwaway logger if nil
+	if params.Logger == nil {
+		params.Logger = log.New(io.Discard, "", 0)
+	}
 
-	log.Println(`Creating temp dir`)
+	params.Logger.Println(`Creating temp dir`)
 
 	tempDir, f, err := createTempDirAndFile()
 	if err != nil {
 		os.RemoveAll(tempDir)
-		return "", "", err
+		return "", "", nil, err
 	}
-	// defer os.RemoveAll(tempDir)
 
-	log.Println(`Generating script`)
+	params.Logger.Println(`Generating script`)
 	err = internal.GenerateScript(f, params.Commands...)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 
-	log.Println(`Building binary`)
-	binPath, exeName, err := execCmdOnTempProject(tempDir, params)
+	params.Logger.Println(`Building binary`)
+	binPath, exeName, err = execCmdOnTempProject(tempDir, params)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 
-	log.Println(fmt.Sprintf("Build successful. Binary at:%v", binPath), 5)
+	params.Logger.Printf("Build successful. Binary at:%v\n", binPath)
 
-	// log.Println(`Reading bin`)
-	// inMemBin, err := os.ReadFile(binPath)
-	// if err != nil {
-	// 	return nil, "", err
-	// }
+	cleanup = func() {
+		os.RemoveAll(tempDir)
+	}
 
-	return binPath, exeName, nil
+	return binPath, exeName, cleanup, nil
 }
 
 func createTempDirAndFile() (string, *os.File, error) {
@@ -72,10 +75,10 @@ func createTempDirAndFile() (string, *os.File, error) {
 
 func execCmdOnTempProject(tempDir string, params CreateExeParams) (string, string, error) {
 	// BUILD go.mod, must be done before the exe bin is created or it will fail
-	log.Println(`Mod initialization`)
+	params.Logger.Println(`Mod initialization`)
 	modInit := createExecCmd(tempDir, "go", "mod", "init", "tmp.com/tmp")
 	if out, err := modInit.CombinedOutput(); err != nil {
-		fmt.Println("go mod initialization failed:", string(out))
+		params.Logger.Println("go mod initialization failed:", string(out))
 		return "", "", err
 	}
 
@@ -92,7 +95,7 @@ func execCmdOnTempProject(tempDir string, params CreateExeParams) (string, strin
 		exeName += ".exe"
 	}
 
-	log.Println(`Bin initialization`)
+	params.Logger.Println(`Bin initialization`)
 
 	binPath := filepath.Join(tempDir, exeName)
 	binCmd := createExecCmd(tempDir, "go", "build", "-o", binPath)
@@ -101,7 +104,7 @@ func execCmdOnTempProject(tempDir string, params CreateExeParams) (string, strin
 		fmt.Sprintf("GOARCH=%v", arc.Arch),
 	)
 
-	log.Println("Starting go build...")
+	params.Logger.Println("Starting go build...")
 
 	output, err := binCmd.CombinedOutput()
 	if err != nil {
@@ -109,7 +112,7 @@ func execCmdOnTempProject(tempDir string, params CreateExeParams) (string, strin
 		return "", "", err
 	}
 
-	log.Println("Go build finished.")
+	params.Logger.Println("Go build finished.")
 
 	return binPath, exeName, nil
 }

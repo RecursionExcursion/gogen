@@ -2,11 +2,13 @@ package internal
 
 /* Supported os and arch */
 
-const Win64 = "win64"
-const Linux64 = "linux64"
-const Mac64 = "mac64"
+const (
+	Win64   = "win64"
+	Linux64 = "linux64"
+	Mac64   = "mac64"
+)
 
-type CompliationPair struct {
+type CompilationPair struct {
 	Os   string
 	Arch string
 }

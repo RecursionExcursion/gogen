@@ -14,11 +14,9 @@ func (s *script) addLine(l string) {
 	s.code += "\n" + l
 }
 
-/* GenerateScript - creates a go script that opens files/urls
- * path- is where the script is going to be created
- * args- urls/paths to open
- */
-
+// GenerateScript - creates a go script that opens files/urls.
+// f- file where the script is going to be created.
+// args- urls/paths to open.
 func GenerateScript(f *os.File, args ...string) error {
 	//Create base script and imports
 	fileContent := script{
