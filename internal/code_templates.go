@@ -16,7 +16,7 @@ func (ct *codeTemplate) inject(in string) {
 
 var mainFuncTemplate = codeTemplate{
 	code: `func main(){
-	<args>
+		<args>
 	}`,
 	delimmiter: "<args>",
 }
