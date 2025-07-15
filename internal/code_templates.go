@@ -73,6 +73,9 @@ var execFnTemplate = codeTemplate{
 }
 
 var browserWakeUpTemplate = codeTemplate{
+	imports: []string{
+		"time",
+	},
 	code: `
 	func() {
 		var warmUpCmd *exec.Cmd
