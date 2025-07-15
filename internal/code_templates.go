@@ -57,7 +57,7 @@ var execFnTemplate = codeTemplate{
 
 		switch runtime.GOOS {
 		case "windows":
-			cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+			cmd = exec.Command("cmd", "/c", "start", url)
 		case "darwin":
 			cmd = exec.Command("open", url)
 		case "linux":
