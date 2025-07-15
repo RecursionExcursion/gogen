@@ -23,7 +23,7 @@ func GenerateScript(f *os.File, args ...string) error {
 		code: genPackageStatement(),
 	}
 	imports := []string{}
-	imports = append(imports, execFnCallTemplate.imports...)
+	imports = append(imports, execFnTemplate.imports...)
 	imports = append(imports, browserWakeUpTemplate.imports...)
 
 	fileContent.addLine(createImportStatement(imports...))
