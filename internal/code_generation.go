@@ -22,7 +22,11 @@ func GenerateScript(f *os.File, args ...string) error {
 	fileContent := script{
 		code: genPackageStatement(),
 	}
-	fileContent.addLine(createImportStatement(execFnTemplate.imports...))
+	imports := []string{}
+	imports = append(imports, execFnCallTemplate.imports...)
+	imports = append(imports, browserWakeUpTemplate.imports...)
+
+	fileContent.addLine(createImportStatement(imports...))
 
 	//create main fn logic
 	mainFnScript := script{
