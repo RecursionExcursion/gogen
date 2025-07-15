@@ -29,8 +29,16 @@ func GenerateScript(f *os.File, args ...string) error {
 		code: "",
 	}
 
+	awakeBrowser := false
+
 	//add exefn calls with args
 	for _, a := range args {
+		//opens new tab and waits 1 second to account for browser latency
+		if strings.HasPrefix(a, "url:") && !awakeBrowser {
+			mainFnScript.addLine(browserWakeUpTemplate.code)
+			awakeBrowser = true
+		}
+
 		execCall := execFnCallTemplate
 		execCall.inject(fmt.Sprintf("\"%v\"", a))
 		mainFnScript.addLine(execCall.code)
