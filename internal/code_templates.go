@@ -33,7 +33,6 @@ var execFnTemplate = codeTemplate{
 		"runtime",
 		"strings",
 		"log",
-		"time",
 	},
 	code: `func execCommand(path string) error {
 
@@ -57,7 +56,7 @@ var execFnTemplate = codeTemplate{
 
 		switch runtime.GOOS {
 		case "windows":
-			cmd = exec.Command("cmd", "/c", "start", url)
+			cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
 		case "darwin":
 			cmd = exec.Command("open", url)
 		case "linux":
@@ -65,7 +64,6 @@ var execFnTemplate = codeTemplate{
 		default:
 			return fmt.Errorf("unsupported platform")
 		}
-		time.Sleep(500 * time.Millisecond)
 	} else {
 		log.Fatal("Missing command prefix")
 	}
