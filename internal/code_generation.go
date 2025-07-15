@@ -22,26 +22,16 @@ func GenerateScript(f *os.File, args ...string) error {
 	fileContent := script{
 		code: genPackageStatement(),
 	}
-	imports := []string{}
-	imports = append(imports, execFnTemplate.imports...)
-	imports = append(imports, browserWakeUpTemplate.imports...)
 
-	fileContent.addLine(createImportStatement(imports...))
+	fileContent.addLine(createImportStatement(execFnTemplate.imports...))
 
 	//create main fn logic
 	mainFnScript := script{
 		code: "",
 	}
 
-	awakeBrowser := false
-
 	//add exefn calls with args
 	for _, a := range args {
-		//opens new tab and waits 1 second to account for browser latency
-		if strings.HasPrefix(a, "url:") && !awakeBrowser {
-			mainFnScript.addLine(browserWakeUpTemplate.code)
-			awakeBrowser = true
-		}
 
 		execCall := execFnCallTemplate
 		execCall.inject(fmt.Sprintf("\"%v\"", a))

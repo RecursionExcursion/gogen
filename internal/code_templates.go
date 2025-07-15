@@ -33,6 +33,7 @@ var execFnTemplate = codeTemplate{
 		"runtime",
 		"strings",
 		"log",
+		"time",
 	},
 	code: `func execCommand(path string) error {
 
@@ -64,33 +65,11 @@ var execFnTemplate = codeTemplate{
 		default:
 			return fmt.Errorf("unsupported platform")
 		}
+		time.Sleep(500 * time.Millisecond)
 	} else {
 		log.Fatal("Missing command prefix")
 	}
 
 	return cmd.Start()
 }`,
-}
-
-var browserWakeUpTemplate = codeTemplate{
-	imports: []string{
-		"time",
-	},
-	code: `
-	func() {
-		var warmUpCmd *exec.Cmd
-		switch runtime.GOOS {
-		case "windows":
-			warmUpCmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", "about:blank")
-		case "darwin":
-			warmUpCmd = exec.Command("open", "-na", "Safari")
-		case "linux":
-			warmUpCmd = exec.Command("xdg-open", "about:blank")
-		}
-		if warmUpCmd != nil {
-			warmUpCmd.Start()
-			time.Sleep(1 * time.Second)
-		}
-	}()
-`,
 }
