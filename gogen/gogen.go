@@ -24,8 +24,15 @@ type CreateExeParams struct {
 	Logger   *log.Logger
 }
 
+type GogenReturn struct {
+	BinPath string
+	ExeName string
+	Cleanup func()
+}
+
 /* returns binaryPath, exeName, cleanup fn (should be defered till after bin is served), and error */
-func GenerateGoExe(params CreateExeParams) (binPath string, exeName string, cleanup func(), err error) {
+// func GenerateGoExe(params CreateExeParams) (binPath string, exeName string, cleanup func(), err error) {
+func GenerateGoExe(params CreateExeParams) (GogenReturn, error) {
 	//creates throwaway logger if nil
 	if params.Logger == nil {
 		params.Logger = log.New(io.Discard, "", 0)
@@ -36,28 +43,32 @@ func GenerateGoExe(params CreateExeParams) (binPath string, exeName string, clea
 	tempDir, f, err := createTempDirAndFile()
 	if err != nil {
 		os.RemoveAll(tempDir)
-		return "", "", nil, err
+		return GogenReturn{}, err
 	}
 
 	params.Logger.Println(`Generating script`)
 	err = internal.GenerateScript(f, params.Commands...)
 	if err != nil {
-		return "", "", nil, err
+		return GogenReturn{}, err
 	}
 
 	params.Logger.Println(`Building binary`)
-	binPath, exeName, err = execCmdOnTempProject(tempDir, params)
+	binPath, exeName, err := execCmdOnTempProject(tempDir, params)
 	if err != nil {
-		return "", "", nil, err
+		return GogenReturn{}, err
 	}
 
 	params.Logger.Printf("Build successful. Binary at:%v\n", binPath)
 
-	cleanup = func() {
+	cleanup := func() {
 		os.RemoveAll(tempDir)
 	}
 
-	return binPath, exeName, cleanup, nil
+	return GogenReturn{
+		BinPath: binPath,
+		ExeName: exeName,
+		Cleanup: cleanup,
+	}, nil
 }
 
 func createTempDirAndFile() (string, *os.File, error) {
