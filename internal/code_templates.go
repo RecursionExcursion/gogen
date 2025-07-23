@@ -1,54 +1,38 @@
 package internal
 
+var mainFuncTemplate = `
+func main(){
+	{{.Arg}}
+}`
+
+var execFnCallTemplate = `execCommand({{.Arg}})`
+
+var execFnTemplate = `
+package main
+
 import (
+	"fmt"
+	"os/exec"
+	"runtime"
 	"strings"
+	"log"
 )
-
-type codeTemplate struct {
-	imports    []string
-	code       string
-	delimmiter string
-}
-
-func (ct *codeTemplate) inject(in string) {
-	ct.code = strings.Replace(ct.code, ct.delimmiter, in, 1)
-}
-
-var mainFuncTemplate = codeTemplate{
-	code: `func main(){
-		<args>
-	}`,
-	delimmiter: "<args>",
-}
-
-var execFnCallTemplate = codeTemplate{
-	code:       `execCommand(<args>)`,
-	delimmiter: `<args>`,
-}
-
-var execFnTemplate = codeTemplate{
-	imports: []string{
-		"fmt",
-		"os/exec",
-		"runtime",
-		"strings",
-		"log",
-	},
-	code: `func execCommand(path string) error {
+	
+	func execCommand(arg string) error {
 
 	cmdPrefix := "cmd:"
 	urlPrefix := "url:"
 
 	var cmd *exec.Cmd
-	if strings.HasPrefix(path, cmdPrefix) {
-		parts := strings.SplitN(path, ":", 2)
+	if strings.HasPrefix(arg, cmdPrefix) {
+		parts := strings.SplitN(aeg, ":", 2)
 		if len(parts) != 2 {
 			log.Fatal("invalid code command")
 		}
 		cmdParts := strings.SplitN(parts[1], " ", -1)
 		cmd = exec.Command(cmdParts[0], cmdParts[1:]...)
-	} else if strings.HasPrefix(path, urlPrefix) {
-		parts := strings.SplitN(path, ":", 2)
+	} else if strings.HasPrefix(arg, urlPrefix) {
+		parts := strings.SplitN(arg, ":", 2)
 		if len(parts) != 2 {
 			log.Fatal("invalid code command")
 		}
@@ -69,5 +53,4 @@ var execFnTemplate = codeTemplate{
 	}
 
 	return cmd.Start()
-}`,
-}
+}`
